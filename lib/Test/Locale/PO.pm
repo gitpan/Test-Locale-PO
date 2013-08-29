@@ -3,7 +3,7 @@ package Test::Locale::PO;
 
 use strict;
 use warnings;
-our $VERSION = '1.01'; # VERSION
+our $VERSION = '1.02'; # VERSION
 
 use base 'Test::Builder::Module';
 
@@ -39,8 +39,17 @@ sub po_file_ok {
 	my @no_msgstr;
 	my @fuzzy;
 	foreach my $po ( @$content ) {
-		if( $opts->{'empty'} && ( ! defined $po->msgstr || $po->msgstr =~ m/^["\- ]*$/ ) ) {
-			push( @no_msgstr, $po );
+		if( $opts->{'empty'} ) {
+			# check for a simple translation
+			if ( defined $po->msgstr && $po->msgstr !~ m/^["\- ]*$/ ) {
+			}
+			# check if plurals are involved
+			elsif( defined $po->msgid_plural
+					&& defined $po->msgstr_n->{"0"}
+					&& $po->msgstr_n->{"0"} !~ m/^["\- ]*$/ ) {
+			} else {
+				push( @no_msgstr, $po );
+			}
 		}
 		if( $opts->{'fuzzy'} && $po->has_flag('fuzzy') ) {
 			push( @fuzzy, $po );
